@@ -116,7 +116,8 @@
 
 /* Default values */
 /* some woth postfix '-' added for not conflicted with APDS9960 lib */
-#define DEFAULT_ATIME_          0xFF
+// #define DEFAULT_ATIME_          0xFF
+#define DEFAULT_ATIME_          0xED
 #define DEFAULT_WTIME_          0xFF
 #define DEFAULT_PTIME           0xFF
 #define DEFAULT_PPULSE          0x08
@@ -125,19 +126,26 @@
 #define DEFAULT_PDRIVE          LED_DRIVE_100MA
 #define DEFAULT_PDIODE          2
 #define DEFAULT_PGAIN_          PGAIN_8X
-#define DEFAULT_AGAIN_           AGAIN_16X
+#define DEFAULT_AGAIN_          AGAIN_1X
 #define DEFAULT_PILT            0       // Low proximity threshold
 #define DEFAULT_PIHT            50      // High proximity threshold
 #define DEFAULT_AILT            0xFFFF  // Force interrupt for calibration
 #define DEFAULT_AIHT            0
 #define DEFAULT_PERS_           0x22    // 2 consecutive prox or ALS for int.
 
-/* ALS coefficients */
+/* APDS9930 ALS coefficients */
 #define DF                      52
 #define GA                      0.49
 #define ALS_B                       1.862
 #define ALS_C                       0.746
 #define ALS_D                       1.291
+
+// /* APDS9900 ALS coefficients */
+// #define DF                      52
+// #define GA                      0.48
+// #define ALS_B                       2.23
+// #define ALS_C                       0.7
+// #define ALS_D                       1.42
 
 /* State definitions */
 // enum {

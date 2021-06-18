@@ -354,17 +354,23 @@ bool APDS9930::readAmbientLightLux(unsigned long &val)
 
 float APDS9930::floatAmbientToLux(uint16_t Ch0, uint16_t Ch1)
 {
+    uint8_t x[4]={1,8,16,120};
     float ALSIT = 2.73 * (256 - DEFAULT_ATIME_);
     float iac  = max(Ch0 - ALS_B * Ch1, ALS_C * Ch0 - ALS_D * Ch1);
-    float lpc  = GA * DF / (ALSIT * getAmbientLightGain());
+    if (iac < 0) iac = 0;
+	float lpc  = GA * DF / (ALSIT * x[getAmbientLightGain()]);
+    // float lpc  = GA * DF / (ALSIT * getAmbientLightGain());
     return iac * lpc;
 }
 
 unsigned long APDS9930::ulongAmbientToLux(uint16_t Ch0, uint16_t Ch1)
 {
+    uint8_t x[4]={1,8,16,120};
     unsigned long ALSIT = 2.73 * (256 - DEFAULT_ATIME_);
     unsigned long iac  = max(Ch0 - ALS_B * Ch1, ALS_C * Ch0 - ALS_D * Ch1);
-    unsigned long lpc  = GA * DF / (ALSIT * getAmbientLightGain());
+    if (iac < 0) iac = 0;
+    unsigned long lpc  = GA * DF / (ALSIT * x[getAmbientLightGain()]);
+    // unsigned long lpc  = GA * DF / (ALSIT * getAmbientLightGain());
     return iac * lpc;
 }
 
@@ -716,7 +722,7 @@ bool APDS9930::setProximityDiode(uint8_t drive)
  *   0        1x
  *   1        4x
  *   2       16x
- *   3       64x
+ *   3      120x
  *
  * @return the value of the ALS gain. 0xFF on failure.
  */
