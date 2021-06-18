@@ -51,13 +51,13 @@ bool APDS9930::init()
      
     /* Read ID register and check against known values for APDS-9930 */
     if( !wireReadDataByte(APDS9930_ID, id) ) {
-        Serial.println(F("ID read"));
+        Serial.println(F("ID read error"));
         return false;
     }
-    if( !(id == APDS9930_ID_1 || id == APDS9930_ID_2) ) {
+    Serial.println(String("ID is ") + String(id, HEX));
+    if( !(id == APDS9930_ID_1 || id == APDS9930_ID_2 || id == APDS9930_ID_3) ) {
         Serial.println(F("ID check"));
-        Serial.println(String("ID is ") + String(id, HEX));
-        //return false;
+        return false;
     }
      
     /* Set ENABLE register to 0 (disable all features) */
@@ -67,10 +67,10 @@ bool APDS9930::init()
     }
     
     /* Set default values for ambient light and proximity registers */
-    if( !wireWriteDataByte(APDS9930_ATIME, DEFAULT_ATIME) ) {
+    if( !wireWriteDataByte(APDS9930_ATIME, DEFAULT_ATIME_) ) {
         return false;
     }
-    if( !wireWriteDataByte(APDS9930_WTIME, DEFAULT_WTIME) ) {
+    if( !wireWriteDataByte(APDS9930_WTIME, DEFAULT_WTIME_) ) {
         return false;
     }
     if( !wireWriteDataByte(APDS9930_PPULSE, DEFAULT_PPULSE) ) {
@@ -85,10 +85,10 @@ bool APDS9930::init()
     if( !setLEDDrive(DEFAULT_PDRIVE) ) {
         return false;
     }
-    if( !setProximityGain(DEFAULT_PGAIN) ) {
+    if( !setProximityGain(DEFAULT_PGAIN_) ) {
         return false;
     }
-    if( !setAmbientLightGain(DEFAULT_AGAIN) ) {
+    if( !setAmbientLightGain(DEFAULT_AGAIN_) ) {
         return false;
     }
     if( !setProximityDiode(DEFAULT_PDIODE) ) {
@@ -106,7 +106,7 @@ bool APDS9930::init()
     if( !setLightIntHighThreshold(DEFAULT_AIHT) ) {
         return false;
     }
-    if( !wireWriteDataByte(APDS9930_PERS, DEFAULT_PERS) ) {
+    if( !wireWriteDataByte(APDS9930_PERS, DEFAULT_PERS_) ) {
         return false;
     }
 
@@ -185,7 +185,7 @@ bool APDS9930::enableLightSensor(bool interrupts)
 {
     
     /* Set default gain, interrupts, enable power, and enable sensor */
-    if( !setAmbientLightGain(DEFAULT_AGAIN) ) {
+    if( !setAmbientLightGain(DEFAULT_AGAIN_) ) {
         return false;
     }
     if( interrupts ) {
@@ -234,7 +234,7 @@ bool APDS9930::disableLightSensor()
 bool APDS9930::enableProximitySensor(bool interrupts)
 {
     /* Set default gain, LED, interrupts, enable power, and enable sensor */
-    if( !setProximityGain(DEFAULT_PGAIN) ) {
+    if( !setProximityGain(DEFAULT_PGAIN_) ) {
         return false;
     }
     if( !setLEDDrive(DEFAULT_PDRIVE) ) {
@@ -354,21 +354,17 @@ bool APDS9930::readAmbientLightLux(unsigned long &val)
 
 float APDS9930::floatAmbientToLux(uint16_t Ch0, uint16_t Ch1)
 {
-	uint8_t x[4]={1,8,16,120};
-    float ALSIT = 2.73 * (256 - DEFAULT_ATIME);
+    float ALSIT = 2.73 * (256 - DEFAULT_ATIME_);
     float iac  = max(Ch0 - ALS_B * Ch1, ALS_C * Ch0 - ALS_D * Ch1);
-    if (iac < 0) iac = 0;
-	float lpc  = GA * DF / (ALSIT * x[getAmbientLightGain()]);
+    float lpc  = GA * DF / (ALSIT * getAmbientLightGain());
     return iac * lpc;
 }
 
 unsigned long APDS9930::ulongAmbientToLux(uint16_t Ch0, uint16_t Ch1)
 {
-	uint8_t x[4]={1,8,16,120};
-    unsigned long ALSIT = 2.73 * (256 - DEFAULT_ATIME);
+    unsigned long ALSIT = 2.73 * (256 - DEFAULT_ATIME_);
     unsigned long iac  = max(Ch0 - ALS_B * Ch1, ALS_C * Ch0 - ALS_D * Ch1);
-	if (iac < 0) iac = 0;
-    unsigned long lpc  = GA * DF / (ALSIT * x[getAmbientLightGain()]);
+    unsigned long lpc  = GA * DF / (ALSIT * getAmbientLightGain());
     return iac * lpc;
 }
 
@@ -720,7 +716,7 @@ bool APDS9930::setProximityDiode(uint8_t drive)
  *   0        1x
  *   1        4x
  *   2       16x
- *   3      120x
+ *   3       64x
  *
  * @return the value of the ALS gain. 0xFF on failure.
  */
@@ -735,7 +731,7 @@ uint8_t APDS9930::getAmbientLightGain()
     
     /* Shift and mask out ADRIVE bits */
     val &= 0b00000011;
-	
+    
     return val;
 }
 
